@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- arguments -->
+  <arg name="nodelet_manager" default="velodyne_nodelet_manager" />
+  <arg name="points_topic" default="/velodyne_points" />
+  <arg name="imu_topic" default="/imu" />
+  <arg name="odom_child_frame_id" default="velodyne" />
+  <arg name="rvizconfig" default="$(find hdl_localization)/rviz/hdl_localization.rviz" />
+  <arg name="model" default="$(find car_description)/urdf/fusion.urdf"/>
+
+  <param name="robot_description" textfile="$(arg model)"/>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="street2map_publisher" args="-4 0 -1.5 3.14 3.3 0 velodyne body" />
+
+  <!-- in case you use velodyne_driver, comment out the following line -->
+  <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager)" args="manager" output="screen"/>
+
+    <!-- globalmap_server_nodelet -->
+    <node pkg="nodelet" type="nodelet" name="globalmap_server_nodelet" args="load hdl_localization/GlobalmapServerNodelet $(arg nodelet_manager)">
+      <param name="globalmap_pcd" value="$(find hdl_localization)/data/map.pcd" />
+      <param name="downsample_resolution" value="0.1" />
+    </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+</launch>
